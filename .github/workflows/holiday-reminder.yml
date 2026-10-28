@@ -23,9 +23,9 @@ jobs:
           SLACK_USER_TOKEN: ${{ secrets.SLACK_USER_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           HOLIDAY_YEAR: "2027"
-          HOLIDAY_REGION: england-and-wales
+          HOLIDAY_REGION: scotland
           SEND_MODE: channel
-          REMIND_DAYS_BEFORE: "0"
+          REMIND_DAYS_BEFORE: "14,7,1,0"
           TEST_DATE: ${{ github.event.inputs.test_date }}
         run: |
           if [ -n "$TEST_DATE" ]; then
