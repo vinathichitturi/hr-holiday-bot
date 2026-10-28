@@ -1,0 +1,35 @@
+name: Holiday reminders
+on:
+  schedule:
+    - cron: "0 8 * * *"
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      test_date:
+        description: "Optional test date YYYY-MM-DD (leave empty for a normal run)"
+        required: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Send reminders
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_USER_TOKEN: ${{ secrets.SLACK_USER_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          HOLIDAY_YEAR: "2027"
+          HOLIDAY_REGION: england-and-wales
+          SEND_MODE: channel
+          REMIND_DAYS_BEFORE: "0"
+          TEST_DATE: ${{ github.event.inputs.test_date }}
+        run: |
+          if [ -n "$TEST_DATE" ]; then
+            python bot.py --run-now --date "$TEST_DATE"
+          else
+            python bot.py --run-now --at-send-hour
+          fi
