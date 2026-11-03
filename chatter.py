@@ -23,11 +23,13 @@ log = logging.getLogger("chatter")
 WORK_TZ = ZoneInfo(os.getenv("WORK_TZ", "Europe/London"))
 WORK_START = int(os.getenv("WORK_START", "10"))   # 10:00
 WORK_END = int(os.getenv("WORK_END", "17"))       # until 17:00
-START_PROBABILITY = float(os.getenv("START_PROBABILITY", "0.3"))
+START_PROBABILITY = float(os.getenv("START_PROBABILITY", "0.35"))
+JITTER_MAX_MIN = float(os.getenv("JITTER_MAX_MIN", "8"))  # random wait before starting
 DELAY_MIN = int(os.getenv("DELAY_MIN", "15"))     # seconds between messages
 DELAY_MAX = int(os.getenv("DELAY_MAX", "60"))
 CHANNEL = os.getenv("CHATTER_CHANNEL_ID")
-USE_THREADS = os.getenv("USE_THREADS", "true").lower() == "true"
+USE_THREADS = os.getenv("USE_THREADS", "false").lower() == "true"
+CONVO_SET = os.getenv("CONVO_SET", "dev")  # "dev" or "hr"
 
 PERSONAS = [
     {"username": os.getenv("BOT_A_NAME", "PR Pal"), "icon_emoji": os.getenv("BOT_A_ICON", ":robot_face:")},
@@ -110,6 +112,7 @@ CONVERSATIONS = [
     ],
 ]
 
+# HR bot opens, employee bot replies (both clearly labelled demo bots)
 HR_CONVERSATIONS = [
     [
         "Hi, could you share your updated timesheet for this week?",
@@ -134,7 +137,13 @@ HR_CONVERSATIONS = [
         "Going well, thanks. Let me note down a couple of things and keep you posted.",
         "Great, happy to help whenever you're ready.",
     ],
+    [
+        "Could you review the updated leave policy and let me know if you have questions?",
+        "Will do, let me have a look and keep you posted.",
+        "Thanks. Feel free to message me anytime.",
+    ],
 ]
+
 
 def in_work_hours(now):
     return now.weekday() < 5 and WORK_START <= now.hour < WORK_END
@@ -159,8 +168,7 @@ def say(client, persona, text, thread_ts, dry_run):
 
 
 def run_conversation(client, dry_run):
-    pool = HR_CONVERSATIONS if os.getenv("CONVO_SET", "dev") == "hr" else CONVERSATIONS
-    convo = random.choice(pool)
+    convo = random.choice(HR_CONVERSATIONS if CONVO_SET == "hr" else CONVERSATIONS)
     thread_ts = None
     for i, line in enumerate(convo):
         resp = say(client, PERSONAS[i % 2], line, thread_ts, dry_run)
@@ -184,6 +192,12 @@ def main():
             return
         if random.random() > START_PROBABILITY:
             log.info("Not starting a conversation this time")
+            return
+        wait = random.uniform(0, JITTER_MAX_MIN * 60)
+        log.info("Starting in %d seconds", wait)
+        time.sleep(wait)
+        if not in_work_hours(datetime.now(WORK_TZ)):
+            log.info("Work hours ended while waiting; skipping")
             return
 
     if not CHANNEL and not args.dry_run:
