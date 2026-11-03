@@ -1,7 +1,23 @@
 name: Bot chatter
 on:
   schedule:
-    - cron: "*/30 8-17 * * 1-5"
+    # Irregular times (UTC) on purpose; the script also adds a random wait
+    - cron: "12 9 * * 1-5"
+    - cron: "47 9 * * 1-5"
+    - cron: "19 10 * * 1-5"
+    - cron: "53 10 * * 1-5"
+    - cron: "8 11 * * 1-5"
+    - cron: "41 11 * * 1-5"
+    - cron: "23 12 * * 1-5"
+    - cron: "58 12 * * 1-5"
+    - cron: "14 13 * * 1-5"
+    - cron: "49 13 * * 1-5"
+    - cron: "27 14 * * 1-5"
+    - cron: "56 14 * * 1-5"
+    - cron: "11 15 * * 1-5"
+    - cron: "44 15 * * 1-5"
+    - cron: "22 16 * * 1-5"
+    - cron: "51 16 * * 1-5"
   workflow_dispatch:
 jobs:
   chat:
@@ -21,5 +37,6 @@ jobs:
           BOT_B_NAME: Employee Bot (demo)
           DELAY_MIN: "30"
           DELAY_MAX: "120"
-          START_PROBABILITY: "0.3"
+          START_PROBABILITY: "0.35"
+          JITTER_MAX_MIN: "8"
         run: python chatter.py ${{ github.event_name == 'workflow_dispatch' && '--test' || '' }}
