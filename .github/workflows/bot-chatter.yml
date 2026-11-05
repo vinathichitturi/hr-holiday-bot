@@ -30,6 +30,8 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Run a conversation
         env:
+          WORK_START: "10"
+          WORK_END: "23"
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           CHATTER_CHANNEL_ID: ${{ secrets.CHATTER_CHANNEL_ID }}
           CONVO_SET: hr
